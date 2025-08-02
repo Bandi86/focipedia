@@ -23,7 +23,7 @@ This is a monorepo using pnpm workspaces with the following structure:
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/Bandi86/focipedia.git
    cd focipedia
    ```
 
