@@ -1,0 +1,3 @@
+[submodule "sources/football.json"]
+	path = sources/football.json
+	url = https://github.com/openfootball/football.json.git
