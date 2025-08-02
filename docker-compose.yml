@@ -1,0 +1,50 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://backend:3001/api/v1
+    depends_on:
+      - backend
+    networks:
+      - focipedia-network
+
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/focipedia
+      - JWT_SECRET=your-secret-key-here-change-in-production
+      - FRONTEND_ORIGIN=http://frontend:3000
+    depends_on:
+      - postgres
+    networks:
+      - focipedia-network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=focipedia
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - focipedia-network
+
+volumes:
+  postgres_data:
+
+networks:
+  focipedia-network:
+    driver: bridge

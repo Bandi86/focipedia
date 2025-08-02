@@ -39,8 +39,6 @@
     "@hookform/resolvers": "^5.2.1",
     "eslint-config-next": "15.4.5",
     "next": "15.4.5",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
     "react-hook-form": "^7.62.0",
     "zod": "^4.0.14"
   }
