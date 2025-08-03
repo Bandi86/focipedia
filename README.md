@@ -16,7 +16,7 @@ This is a monorepo using pnpm workspaces with the following structure:
 ### Prerequisites
 
 - Node.js >= 18.18.0
-- pnpm >= 9.0.0
+- pnpm >= 9.0.0 (Corepack recommended: `corepack enable && corepack prepare pnpm@9.0.0 --activate`)
 - PostgreSQL
 
 ### Setup
@@ -27,10 +27,11 @@ This is a monorepo using pnpm workspaces with the following structure:
    cd focipedia
    ```
 
-2. **Install dependencies**
+2. **Install dependencies (pnpm only)**
    ```bash
-   pnpm install
+   pnpm install --frozen-lockfile
    ```
+   Note: npm and yarn are not supported here. A preinstall guard will fail if used.
 
 3. **Setup environment variables**
    ```bash
@@ -53,6 +54,21 @@ This is a monorepo using pnpm workspaces with the following structure:
 5. **Start development servers**
    ```bash
    pnpm dev
+   ```
+   Tip: Per-app commands with filters:
+   ```bash
+   pnpm --filter @focipedia/frontend dev
+   pnpm --filter @focipedia/backend dev
+   ```
+   Tip: Per-app commands with filters:
+   ```bash
+   pnpm --filter @focipedia/frontend dev
+   pnpm --filter @focipedia/backend dev
+   ```
+   Tip: You can run per-app commands with filters, e.g.:
+   ```bash
+   pnpm --filter @focipedia/frontend dev
+   pnpm --filter @focipedia/backend dev
    ```
 
 ## 📁 Project Structure
@@ -80,6 +96,139 @@ focipedia/
 - `pnpm typecheck` - Run TypeScript type checking
 - `pnpm test` - Run tests
 - `pnpm ci` - Run all quality gates (lint, typecheck, test, build)
+
+## 🧪 CI usage (pnpm-only)
+
+Recommended steps:
+```bash
+corepack enable
+corepack prepare pnpm@9.0.0 --activate
+pnpm install --frozen-lockfile
+pnpm ci
+```
+
+Per-package examples:
+```bash
+pnpm --filter @focipedia/backend test:ci
+pnpm --filter @focipedia/backend build
+pnpm --filter @focipedia/frontend lint
+pnpm --filter @focipedia/frontend build
+```
+
+### GitHub Actions example
+
+Create .github/workflows/ci.yml:
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node + Corepack
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.18.0'
+          cache: 'pnpm'
+
+      - name: Enable Corepack and prepare pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.0.0 --activate
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test:ci
+
+      - name: Build
+        run: pnpm build
+```
+
+### Docker build (pnpm)
+When building Docker images, prefer copying pnpm-lock.yaml and using Corepack:
+```dockerfile
+# syntax=docker/dockerfile:1
+FROM node:18.18-bullseye AS deps
+RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+WORKDIR /app
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc ./
+COPY apps ./apps
+RUN pnpm install --frozen-lockfile
+
+FROM node:18.18-bullseye AS build
+RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+WORKDIR /app
+COPY --from=deps /app /app
+RUN pnpm build
+```
+
+## 🧪 CI usage (pnpm-only)
+
+Recommended steps:
+```bash
+corepack enable
+corepack prepare pnpm@9.0.0 --activate
+pnpm install --frozen-lockfile
+pnpm ci
+```
+
+Per-package examples:
+```bash
+pnpm --filter @focipedia/backend test:ci
+pnpm --filter @focipedia/backend build
+pnpm --filter @focipedia/frontend lint
+pnpm --filter @focipedia/frontend build
+```
+
+CI examples:
+```bash
+pnpm install --frozen-lockfile
+pnpm ci
+```
+
+Per-package CI:
+```bash
+pnpm --filter @focipedia/backend test:ci
+pnpm --filter @focipedia/frontend build
+```
+
+CI examples:
+```bash
+pnpm install --frozen-lockfile
+pnpm ci
+```
+
+Per-package CI:
+```bash
+pnpm --filter @focipedia/backend test:ci
+pnpm --filter @focipedia/frontend build
+```
+
+CI (example):
+```bash
+pnpm install --frozen-lockfile
+pnpm ci
+```
+Per-package CI steps:
+```bash
+pnpm --filter @focipedia/backend test:ci
+pnpm --filter @focipedia/frontend build
+```
 
 ## 🗄️ Database
 

@@ -3,6 +3,11 @@ node_modules/
 .pnp
 .pnp.js
 
+# Lock files (only pnpm-lock.yaml should be committed)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
 # Production builds
 dist/
 build/
@@ -22,6 +27,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+.pnpm-debug.log*
 
 # Runtime data
 pids

@@ -3,7 +3,13 @@
   "private": true,
   "version": "0.1.0",
   "type": "commonjs",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18.18.0",
+    "pnpm": ">=9.0.0"
+  },
   "scripts": {
+    "preinstall": "node ../../scripts/check-package-manager.js",
     "dev": "tsx watch src/main.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
