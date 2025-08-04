@@ -1,46 +1,29 @@
 {
   "name": "focipedia",
+  "version": "1.0.0",
+  "description": "Focipedia - Football Statistics Platform",
   "private": true,
-  "version": "0.1.0",
-  "description": "Focipedia monorepo (pnpm workspaces) with Next.js frontend and NestJS backend",
-  "packageManager": "pnpm@9.0.0",
-  "scripts": {
-    "preinstall": "node scripts/check-package-manager.js",
-    "setup": "pnpm install --frozen-lockfile && pnpm -r run prepare || true",
-    "dev": "pnpm -r --parallel run dev",
-    "build": "pnpm -r run build",
-    "start": "pnpm -r run start",
-    "lint": "pnpm -r run lint",
-    "format": "pnpm -r run format",
-    "typecheck": "pnpm -r run typecheck",
-    "test": "pnpm -r run test",
-    "test:ci": "pnpm -r --workspace-concurrency=1 run test:ci",
-    "ci": "pnpm lint && pnpm typecheck && pnpm test:ci && pnpm build",
-    "clean": "pnpm -r run clean",
-    "prisma:generate": "pnpm --filter @focipedia/backend prisma:generate",
-    "prisma:migrate": "pnpm --filter @focipedia/backend prisma:migrate",
-    "db:seed": "pnpm --filter @focipedia/backend db:seed"
-  },
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "engines": {
-    "node": ">=18.18.0"
+  "scripts": {
+    "build": "pnpm -r run build",
+    "dev": "pnpm -r run dev",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test",
+    "clean": "pnpm -r run clean",
+    "type-check": "pnpm -r run type-check"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@types/node": "^24.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
     "eslint": "^9.32.0",
-    "globals": "^16.3.0",
-    "typescript": "5.9.2",
-    "typescript-eslint": "^8.38.0"
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2"
   },
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.1",
-    "eslint-config-next": "15.4.5",
-    "next": "15.4.5",
-    "react-hook-form": "^7.62.0",
-    "zod": "^4.0.14"
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   }
 }

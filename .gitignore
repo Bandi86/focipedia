@@ -134,4 +134,7 @@ coverage/
 *.pid.lock
 
 # Cursor IDE
-.cursor/ 
+.cursor/
+.kiro/
+.vscode/
+focipedia_v1_archive/

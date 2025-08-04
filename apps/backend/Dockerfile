@@ -1,33 +1,66 @@
-# Simple single-stage build for NestJS backend
-FROM node:18-alpine
+# syntax=docker/dockerfile:1.7
 
+# Use buildx cache mounts; create a reproducible, self-contained runtime via pnpm deploy
+FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+
+# 1) Pre-fetch only: fills store from lockfile for deterministic installs
+FROM base AS prefetch
+WORKDIR /repo
+# Root manifests
+COPY ../../package.json ./package.json
+COPY ../../pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY ../../pnpm-lock.yaml ./pnpm-lock.yaml
+# App manifest
+COPY ./package.json ./apps/backend/package.json
+RUN --mount=type=cache,target=/root/.pnpm-store pnpm fetch
+
+# 2) Build backend (no frozen lockfile, since lock is out of date vs package.json)
+FROM base AS build
+WORKDIR /repo
+COPY --from=prefetch /root/.local/share/pnpm/store /root/.local/share/pnpm/store
+COPY ../../package.json ./package.json
+COPY ../../pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY ../../pnpm-lock.yaml ./pnpm-lock.yaml
+COPY ./package.json ./apps/backend/package.json
+# Install only what backend needs (dev deps allowed for build)
+RUN --mount=type=cache,target=/root/.pnpm-store pnpm install --filter ./apps/backend...
+# Copy sources and build
+COPY apps/backend ./apps/backend
+# Generate Prisma Client with explicit schema path
+RUN pnpm --filter ./apps/backend exec prisma generate --schema=./apps/backend/prisma/schema.prisma
+# Build TS -> dist
+RUN pnpm --filter ./apps/backend run build
+
+# 3) Create pruned, production deployment with flat node_modules
+FROM base AS deploy
+WORKDIR /repo
+COPY --from=prefetch /root/.local/share/pnpm/store /root/.local/share/pnpm/store
+COPY ../../package.json ./package.json
+COPY ../../pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY ../../pnpm-lock.yaml ./pnpm-lock.yaml
+COPY ./package.json ./apps/backend/package.json
+# Produce self-contained production install for backend into /opt/backend
+RUN --mount=type=cache,target=/root/.pnpm-store pnpm config set node-linker node-modules && pnpm --dir /repo deploy --filter /backend --prod /opt/backend
+
+# 4) Runtime
+FROM node:20-alpine AS runner
 WORKDIR /app
+ENV NODE_ENV=production
 
-# Install pnpm
-RUN npm install -g pnpm
+# Copy pruned package with flat node_modules and package.json
+COPY --from=deploy /opt/backend/ ./
+# Bring compiled dist and prisma schema
+COPY --from=build /repo/apps/backend/dist ./dist
+COPY --from=build /repo/apps/backend/prisma ./prisma
 
-# Copy package files
-COPY package.json ./
-
-# Install production dependencies only
-RUN pnpm install --prod
-
-# Copy the pre-built application
-COPY dist ./dist
-COPY prisma ./prisma
-
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nestjs
-
-# Change ownership
-RUN chown -R nestjs:nodejs /app
-
+# Non-root user
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nestjs
 USER nestjs
 
 EXPOSE 3001
-
 ENV PORT=3001
-ENV NODE_ENV=production
-
-CMD ["node", "dist/main.js"] 
+CMD ["node", "dist/main.js"]

@@ -1,49 +1,91 @@
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16.4
+    container_name: focipedia-postgres
+    environment:
+      POSTGRES_DB: focipedia
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    # Disable host port publishing to avoid conflicts with a local Postgres on 5432.
+    # If you need to expose Postgres, change to "5433:5432" or stop your local Postgres.
+    # ports:
+    #   - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d focipedia"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - focipedia-network
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7.0.0
+    container_name: focipedia-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - focipedia-network
+    restart: unless-stopped
+
+  # Backend API (NestJS)
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: focipedia-backend
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/focipedia?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      PORT: 3001
+      NODE_ENV: production
+      FRONTEND_ORIGIN: http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - focipedia-network
+    restart: unless-stopped
+
+  # Frontend (Next.js)
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: apps/frontend/Dockerfile
+    container_name: focipedia-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+      NEXT_PUBLIC_APP_NAME: Focipedia
+      NEXT_PUBLIC_APP_VERSION: 1.0.0
+      NODE_ENV: production
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_BASE_URL=http://backend:3001/api/v1
     depends_on:
-      - backend
+      backend:
+        condition: service_started
     networks:
       - focipedia-network
-
-  backend:
-    build:
-      context: ./apps/backend
-      dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/focipedia
-      - JWT_SECRET=your-secret-key-here-change-in-production
-      - FRONTEND_ORIGIN=http://frontend:3000
-    depends_on:
-      - postgres
-    networks:
-      - focipedia-network
-
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_DB=focipedia
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
-    networks:
-      - focipedia-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   focipedia-network:

@@ -1,0 +1,27 @@
+{
+  "name": "@focipedia/types",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared TypeScript types for Focipedia (frontend + backend).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p .",
+    "clean": "rimraf dist",
+    "type-check": "tsc -p . --noEmit"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1",
+    "typescript": "^5.9.2"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  }
+}

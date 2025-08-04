@@ -1,35 +1,80 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
-import * as cookieParser from 'cookie-parser';
+import csurf from 'csurf';
+import rateLimit from 'express-rate-limit';
+
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
-  app.setGlobalPrefix('api/v1');
-  
+  const configService = app.get(ConfigService);
+
+  // Security middleware
+  app.use(helmet());
   app.use(
-    helmet({
-      crossOriginEmbedderPolicy: false,
-      contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+    csurf({ 
+      cookie: true,
+      ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
+    }),
+  );
+  
+  // Rate limiting
+  const rateLimitConfig = configService.get('security');
+  app.use(
+    rateLimit({
+      windowMs: rateLimitConfig.rateLimitWindowMs,
+      max: rateLimitConfig.rateLimitMaxRequests,
+      message: 'Too many requests from this IP, please try again later.',
     }),
   );
 
-  const origin = process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000';
+  // Global validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
+  // CORS configuration
+  const corsConfig = configService.get('cors');
   app.enableCors({
-    origin,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: corsConfig.origin,
+    credentials: corsConfig.credentials,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
   });
 
-  // Ensure cookies are parsed for guards/controllers using cookies
-  app.use(cookieParser());
+  // Global prefix
+  app.setGlobalPrefix('api');
 
-  const port = Number(process.env.PORT ?? 3001);
+  // Swagger/OpenAPI configuration
+  const config = new DocumentBuilder()
+    .setTitle('Focipedia API')
+    .setDescription('Focipedia Football Community Platform API')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addTag('auth', 'Authentication endpoints')
+    .addTag('users', 'User management endpoints')
+    .addTag('profiles', 'Profile management endpoints')
+    .addTag('settings', 'User settings endpoints')
+    .addTag('health', 'Health check endpoints')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
+
+  const port = configService.get('server.port');
   await app.listen(port);
   
-  console.log(`Backend listening on http://localhost:${port}`);
+  console.log(`🚀 Focipedia API is running on: http://localhost:${port}`);
+  console.log(`📖 API documentation available at: http://localhost:${port}/docs`);
+  console.log(`🔧 Environment: ${configService.get('server.nodeEnv')}`);
 }
-
-bootstrap(); 
+bootstrap();
