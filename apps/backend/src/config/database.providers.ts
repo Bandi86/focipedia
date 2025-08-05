@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from './prisma.service';
 
 export const databaseProviders = [
   {
@@ -20,3 +21,5 @@ export const databaseProviders = [
     inject: [ConfigService],
   },
 ];
+
+export { PrismaService };

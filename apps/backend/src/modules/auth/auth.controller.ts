@@ -6,8 +6,10 @@ import {
   HttpStatus,
   UseGuards,
   Request,
+  Get,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import {
@@ -16,6 +18,8 @@ import {
   RefreshTokenDto,
   ForgotPasswordDto,
   ResetPasswordDto,
+  VerifyEmailDto,
+  ResendVerificationDto,
   AuthResponseDto,
 } from './dto/auth.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -90,6 +94,42 @@ export class AuthController {
     return { message: 'Logged out successfully' };
   }
 
+  @Post('verify-email')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify email address' })
+  @ApiResponse({
+    status: 200,
+    description: 'Email verified successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired verification token',
+  })
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto): Promise<{ message: string }> {
+    return this.authService.verifyEmail(verifyEmailDto);
+  }
+
+  @Post('resend-verification')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Resend email verification' })
+  @ApiResponse({
+    status: 200,
+    description: 'Verification email sent successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Email is already verified',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  async resendEmailVerification(@Body() resendVerificationDto: ResendVerificationDto): Promise<{ message: string }> {
+    return this.authService.resendEmailVerification(resendVerificationDto);
+  }
+
   @Post('forgot-password')
   @Public()
   @HttpCode(HttpStatus.OK)
@@ -99,8 +139,7 @@ export class AuthController {
     description: 'Password reset email sent',
   })
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto): Promise<{ message: string }> {
-    // TODO: Implement password reset functionality
-    return { message: 'Password reset email sent (if user exists)' };
+    return this.authService.forgotPassword(forgotPasswordDto);
   }
 
   @Post('reset-password')
@@ -111,8 +150,32 @@ export class AuthController {
     status: 200,
     description: 'Password reset successfully',
   })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired reset token',
+  })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
-    // TODO: Implement password reset functionality
-    return { message: 'Password reset successfully' };
+    return this.authService.resetPassword(resetPasswordDto);
   }
-} 
+
+  // Availability checks
+  @Get('check-email')
+  @Public()
+  @ApiOperation({ summary: 'Check email availability' })
+  @ApiQuery({ name: 'email', required: true })
+  @ApiResponse({ status: 200, description: 'Availability result' })
+  async checkEmail(@Query('email') email: string): Promise<{ available: boolean }> {
+    const available = await this.authService.isEmailAvailable(email);
+    return { available };
+  }
+
+  @Get('check-username')
+  @Public()
+  @ApiOperation({ summary: 'Check username availability' })
+  @ApiQuery({ name: 'username', required: true })
+  @ApiResponse({ status: 200, description: 'Availability result' })
+  async checkUsername(@Query('username') username: string): Promise<{ available: boolean }> {
+    const available = await this.authService.isUsernameAvailable(username);
+    return { available };
+  }
+}

@@ -23,9 +23,12 @@ export class RegisterDto {
 }
 
 export class LoginDto {
-  @ApiProperty({ description: 'User email address', example: 'user@example.com' })
-  @IsEmail()
-  email!: string;
+  @ApiProperty({ 
+    description: 'User email address or username', 
+    example: 'user@example.com or johndoe' 
+  })
+  @IsString()
+  emailOrUsername!: string;
 
   @ApiProperty({ description: 'User password', example: 'password123' })
   @IsString()
@@ -55,6 +58,18 @@ export class ResetPasswordDto {
   password!: string;
 }
 
+export class VerifyEmailDto {
+  @ApiProperty({ description: 'Email verification token' })
+  @IsString()
+  token!: string;
+}
+
+export class ResendVerificationDto {
+  @ApiProperty({ description: 'User email address', example: 'user@example.com' })
+  @IsEmail()
+  email!: string;
+}
+
 export class AuthResponseDto {
   @ApiProperty({ description: 'Access token' })
   accessToken!: string;
@@ -74,5 +89,6 @@ export class AuthResponseDto {
     email: string;
     username: string;
     displayName: string;
+    isVerified: boolean;
   };
 } 

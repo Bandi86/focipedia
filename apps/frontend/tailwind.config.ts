@@ -51,6 +51,18 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Football themed colors
+        football: {
+          green: "#1a5d1a",
+          white: "#ffffff",
+          grass: "#2d8f2d",
+          lines: "#f0f0f0",
+        },
+        brand: {
+          blue: "#1e40af",
+          orange: "#ea580c",
+          gold: "#d97706",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -20,6 +20,10 @@ describe('AuthController', () => {
     login: jest.fn(),
     refreshToken: jest.fn(),
     logout: jest.fn(),
+    verifyEmail: jest.fn(),
+    resendEmailVerification: jest.fn(),
+    forgotPassword: jest.fn(),
+    resetPassword: jest.fn(),
   };
 
   const mockAuthResponse: AuthResponseDto = {
@@ -32,6 +36,7 @@ describe('AuthController', () => {
       email: 'test@example.com',
       username: 'testuser',
       displayName: 'Test User',
+      isVerified: false,
     },
   };
 
@@ -85,7 +90,7 @@ describe('AuthController', () => {
 
   describe('login', () => {
     const validLoginDto: LoginDto = {
-      email: 'test@example.com',
+      emailOrUsername: 'test@example.com',
       password: 'password123',
     };
 
@@ -166,23 +171,63 @@ describe('AuthController', () => {
     });
   });
 
+  describe('verifyEmail', () => {
+    it('should verify email successfully', async () => {
+      // Arrange
+      const mockResponse = { message: 'Email successfully verified' };
+      mockAuthService.verifyEmail.mockResolvedValue(mockResponse);
+
+      // Act
+      const result = await controller.verifyEmail({ token: 'verification-token' });
+
+      // Assert
+      expect(result).toEqual(mockResponse);
+      expect(mockAuthService.verifyEmail).toHaveBeenCalledWith({ token: 'verification-token' });
+    });
+  });
+
+  describe('resendEmailVerification', () => {
+    it('should resend email verification successfully', async () => {
+      // Arrange
+      const mockResponse = { message: 'Verification email sent successfully' };
+      mockAuthService.resendEmailVerification.mockResolvedValue(mockResponse);
+
+      // Act
+      const result = await controller.resendEmailVerification({ email: 'test@example.com' });
+
+      // Assert
+      expect(result).toEqual(mockResponse);
+      expect(mockAuthService.resendEmailVerification).toHaveBeenCalledWith({ email: 'test@example.com' });
+    });
+  });
+
   describe('forgotPassword', () => {
     it('should handle forgot password request', async () => {
+      // Arrange
+      const mockResponse = { message: 'If an account with that email exists, a password reset link has been sent' };
+      mockAuthService.forgotPassword.mockResolvedValue(mockResponse);
+
       // Act
       const result = await controller.forgotPassword({ email: 'test@example.com' });
 
       // Assert
-      expect(result).toEqual({ message: 'Password reset email sent (if user exists)' });
+      expect(result).toEqual(mockResponse);
+      expect(mockAuthService.forgotPassword).toHaveBeenCalledWith({ email: 'test@example.com' });
     });
   });
 
   describe('resetPassword', () => {
     it('should handle password reset', async () => {
+      // Arrange
+      const mockResponse = { message: 'Password successfully reset' };
+      mockAuthService.resetPassword.mockResolvedValue(mockResponse);
+
       // Act
       const result = await controller.resetPassword({ token: 'reset-token', password: 'newpassword' });
 
       // Assert
-      expect(result).toEqual({ message: 'Password reset successfully' });
+      expect(result).toEqual(mockResponse);
+      expect(mockAuthService.resetPassword).toHaveBeenCalledWith({ token: 'reset-token', password: 'newpassword' });
     });
   });
 }); 

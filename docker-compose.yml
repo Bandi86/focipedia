@@ -43,7 +43,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: apps/backend/Dockerfile
+      dockerfile: apps/backend/Dockerfile.simple
     container_name: focipedia-backend
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/focipedia?schema=public

@@ -6,7 +6,13 @@ node_modules/
 # Lock files (only pnpm-lock.yaml should be committed)
 package-lock.json
 yarn.lock
-pnpm-lock.yaml
+# Keep pnpm lockfile tracked; do not ignore it
+
+# Husky (node_modules-installed hooks directory)
+.husky/
+
+# Optional local git hooks directory if used instead of Husky
+.githooks/
 
 # Production builds
 dist/
@@ -123,9 +129,15 @@ prisma/migrations/
 # TypeScript
 *.tsbuildinfo
 
+# Git hooks (optional local hooks directory)
+.githooks/
+
 # Testing
 coverage/
 .nyc_output/
+
+# pnpm store
+.pnpm-store/
 
 # Misc
 *.log
@@ -136,5 +148,6 @@ coverage/
 # Cursor IDE
 .cursor/
 .kiro/
+.github
 .vscode/
 focipedia_v1_archive/

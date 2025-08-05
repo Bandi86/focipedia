@@ -1,105 +1,120 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { auth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { hu } from '@/lib/i18n/hu';
+import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import { WidgetGrid, Widget, WidgetHeader, WidgetContent } from '@/components/dashboard/WidgetGrid';
+
+// Lazy-load non-critical widgets for performance
+const WelcomeWidget = lazy(() => import('@/components/dashboard/WelcomeWidget'));
+const StatsWidget = lazy(() => import('@/components/dashboard/StatsWidget'));
+const ActivityFeed = lazy(() => import('@/components/dashboard/ActivityFeed'));
+
+function CardSkeleton({ title }: { title?: string }) {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6" aria-label={title ? `Loading ${title}` : 'Loading'}>
+      {title && <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4" />}
+      <div className="h-24 w-full bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
+    </div>
+  );
+}
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const currentUser = auth.getCurrentUser();
-    if (!currentUser) {
-      router.push('/login');
-      return;
-    }
-    setUser(currentUser);
-    setIsLoading(false);
-  }, [router]);
+    const checkAuth = async () => {
+      try {
+        // Check if user is authenticated
+        const authenticated = auth.isAuthenticated();
+        setIsAuthenticated(authenticated);
+        
+        if (!authenticated) {
+          // If not authenticated, redirect to login
+          router.replace('/');
+          return;
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        router.replace('/');
+        return;
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleLogout = async () => {
-    await auth.logout();
-    router.push('/login');
-  };
+    checkAuth();
+  }, [router]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-2 border-green-600 border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">{hu.common.loading}</p>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <nav className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Focipedia
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-700 dark:text-gray-300">
-                Welcome, {user?.displayName || user?.username}
-              </span>
-              <Button onClick={handleLogout} variant="outline">
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+  // If not authenticated, show nothing (will redirect to login)
+  if (!isAuthenticated) {
+    return null;
+  }
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="border-4 border-dashed border-gray-200 dark:border-gray-700 rounded-lg h-96 flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Welcome to Focipedia Dashboard
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Your football community platform is ready!
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <header>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {hu.dashboard.title}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            {hu.dashboard.subtitle}
+          </p>
+        </header>
+
+        <WidgetGrid>
+          <div className="col-span-1 md:col-span-2" style={{ minHeight: 220 }}>
+            <Suspense fallback={<CardSkeleton title="Welcome" />}>
+              <WelcomeWidget className="h-full" />
+            </Suspense>
+          </div>
+
+          <div className="col-span-1 md:col-span-2" style={{ minHeight: 260 }}>
+            <Suspense fallback={<CardSkeleton title="Your Stats" />}>
+              <StatsWidget className="h-full" />
+            </Suspense>
+          </div>
+
+          <div className="col-span-1 md:col-span-2" style={{ minHeight: 240 }}>
+            <Suspense fallback={<CardSkeleton title="Recent Activity" />}>
+              <ActivityFeed className="h-full" />
+            </Suspense>
+          </div>
+
+          <Widget>
+            <WidgetHeader title={hu.dashboard.profile.title} subtitle={hu.dashboard.profile.subtitle} />
+            <WidgetContent>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                {hu.dashboard.profile.subtitle}
               </p>
-              <div className="mt-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Profile
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mt-2">
-                      Manage your profile and settings
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Community
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mt-2">
-                      Connect with other football fans
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Analytics
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mt-2">
-                      Track your betting insights
-                    </p>
-                  </div>
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {hu.dashboard.profile.completion} 75%
+                </div>
+                <div className="mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div className="bg-green-600 h-2 rounded-full" style={{ width: '75%' }} />
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+            </WidgetContent>
+          </Widget>
+        </WidgetGrid>
+      </div>
+    </DashboardLayout>
   );
-} 
+}

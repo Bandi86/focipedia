@@ -6,8 +6,8 @@ export const databaseConfig = registerAs('database', () => ({
 
 export const jwtConfig = registerAs('jwt', () => ({
   secret: process.env.JWT_SECRET || 'fallback-secret-key',
-  expiresIn: process.env.JWT_EXPIRES_IN || '15m',
-  refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+  expiresIn: process.env.JWT_EXPIRES_IN || '24h', // 15m helyett 24h
+  refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d', // 7d helyett 30d
 }));
 
 export const redisConfig = registerAs('redis', () => ({

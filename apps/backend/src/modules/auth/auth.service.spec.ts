@@ -6,6 +6,8 @@ import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
 
 import { AuthService } from './auth.service';
+import { EmailService } from './email.service';
+import { TokenService } from './token.service';
 import { RegisterDto, LoginDto, RefreshTokenDto } from './dto/auth.dto';
 
 // Mock PrismaClient
@@ -14,6 +16,7 @@ const mockPrismaClient = {
     findFirst: jest.fn(),
     findUnique: jest.fn(),
     create: jest.fn(),
+    update: jest.fn(),
   },
 };
 
@@ -38,6 +41,18 @@ describe('AuthService', () => {
     get: jest.fn(),
   };
 
+  const mockEmailService = {
+    sendEmailVerification: jest.fn(),
+    sendPasswordReset: jest.fn(),
+  };
+
+  const mockTokenService = {
+    createEmailVerificationToken: jest.fn(),
+    createPasswordResetToken: jest.fn(),
+    validateEmailVerificationToken: jest.fn(),
+    consumePasswordResetToken: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -49,6 +64,14 @@ describe('AuthService', () => {
         {
           provide: ConfigService,
           useValue: mockConfigService,
+        },
+        {
+          provide: EmailService,
+          useValue: mockEmailService,
+        },
+        {
+          provide: TokenService,
+          useValue: mockTokenService,
         },
       ],
     }).compile();
@@ -98,7 +121,10 @@ describe('AuthService', () => {
       // Arrange
       mockPrismaClient.user.findFirst.mockResolvedValue(null);
       (argon2.hash as jest.Mock).mockResolvedValue('hashed-password');
-      mockPrismaClient.user.create.mockResolvedValue(mockUser);
+      mockPrismaClient.user.create.mockResolvedValue({...mockUser, isVerified: false});
+      mockPrismaClient.user.findUnique.mockResolvedValue({...mockUser, isVerified: false});
+      mockTokenService.createEmailVerificationToken.mockResolvedValue('verification-token');
+      mockEmailService.sendEmailVerification.mockResolvedValue(undefined);
       mockJwtService.signAsync.mockResolvedValue('access-token');
       mockConfigService.get.mockReturnValue('jwt-secret');
 
@@ -124,6 +150,7 @@ describe('AuthService', () => {
         data: {
           email: registerDto.email,
           passwordHash: 'hashed-password',
+          isVerified: false,
           profile: {
             create: {
               username: registerDto.username,
@@ -142,6 +169,8 @@ describe('AuthService', () => {
           profile: true,
         }
       });
+      expect(mockTokenService.createEmailVerificationToken).toHaveBeenCalledWith(mockUser.id);
+      expect(mockEmailService.sendEmailVerification).toHaveBeenCalled();
       expect(result).toEqual({
         ...mockTokens,
         user: {
@@ -149,6 +178,7 @@ describe('AuthService', () => {
           email: mockUser.email,
           username: mockUser.profile.username,
           displayName: mockUser.profile.displayName,
+          isVerified: false,
         }
       });
     });
@@ -188,7 +218,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     const loginDto: LoginDto = {
-      email: 'test@example.com',
+      emailOrUsername: 'test@example.com',
       password: 'password123',
     };
 
@@ -211,7 +241,7 @@ describe('AuthService', () => {
 
     it('should login user successfully with valid credentials', async () => {
       // Arrange
-      mockPrismaClient.user.findUnique.mockResolvedValue(mockUser);
+      mockPrismaClient.user.findFirst.mockResolvedValue(mockUser);
       (argon2.verify as jest.Mock).mockResolvedValue(true);
       mockJwtService.signAsync.mockResolvedValue('access-token');
       mockConfigService.get.mockReturnValue('jwt-secret');
@@ -220,8 +250,13 @@ describe('AuthService', () => {
       const result = await service.login(loginDto);
 
       // Assert
-      expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
-        where: { email: loginDto.email },
+      expect(mockPrismaClient.user.findFirst).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { email: loginDto.emailOrUsername },
+            { profile: { username: loginDto.emailOrUsername } }
+          ]
+        },
         include: { profile: true }
       });
       expect(argon2.verify).toHaveBeenCalledWith(mockUser.passwordHash, loginDto.password);
@@ -238,7 +273,7 @@ describe('AuthService', () => {
 
     it('should throw UnauthorizedException when user does not exist', async () => {
       // Arrange
-      mockPrismaClient.user.findUnique.mockResolvedValue(null);
+      mockPrismaClient.user.findFirst.mockResolvedValue(null);
 
       // Act & Assert
       await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
@@ -247,7 +282,7 @@ describe('AuthService', () => {
 
     it('should throw UnauthorizedException when password is invalid', async () => {
       // Arrange
-      mockPrismaClient.user.findUnique.mockResolvedValue(mockUser);
+      mockPrismaClient.user.findFirst.mockResolvedValue(mockUser);
       (argon2.verify as jest.Mock).mockResolvedValue(false);
 
       // Act & Assert
@@ -258,7 +293,7 @@ describe('AuthService', () => {
     it('should handle user without profile gracefully', async () => {
       // Arrange
       const userWithoutProfile = { ...mockUser, profile: null };
-      mockPrismaClient.user.findUnique.mockResolvedValue(userWithoutProfile);
+      mockPrismaClient.user.findFirst.mockResolvedValue(userWithoutProfile);
       (argon2.verify as jest.Mock).mockResolvedValue(true);
       mockJwtService.signAsync.mockResolvedValue('access-token');
       mockConfigService.get.mockReturnValue('jwt-secret');

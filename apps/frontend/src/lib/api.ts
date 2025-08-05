@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { auth } from './auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -10,10 +11,10 @@ export const api = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token with automatic refresh
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('accessToken');
+  async (config) => {
+    const token = await auth.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -34,7 +35,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
+        const refreshToken = localStorage.getItem('refreshToken') || localStorage.getItem('refresh_token');
         if (refreshToken) {
           const response = await api.post('/auth/refresh', {
             refreshToken,
@@ -48,10 +49,10 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh token failed, redirect to login
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        // Refresh token failed, clear auth and redirect to login
+        auth.clearAuth();
+        // Don't redirect automatically, let the component handle it
+        console.error('Token refresh failed:', refreshError);
       }
     }
 
@@ -64,9 +65,11 @@ export const authAPI = {
   register: (data: any) => api.post('/auth/register', data),
   login: (data: any) => api.post('/auth/login', data),
   logout: () => api.post('/auth/logout'),
-  refresh: (data: any) => api.post('/auth/refresh', data),
+  refreshToken: (data: any) => api.post('/auth/refresh', data),
   forgotPassword: (data: any) => api.post('/auth/forgot-password', data),
   resetPassword: (data: any) => api.post('/auth/reset-password', data),
+  verifyEmail: (data: { token: string }) => api.post('/auth/verify-email', data),
+  resendVerification: (data: { email: string }) => api.post('/auth/resend-verification', data),
 };
 
 export const userAPI = {
