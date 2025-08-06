@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Formik, Form, Field, ErrorMessage, useFormikContext } from 'formik';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { auth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
+
 import { hu } from '@/lib/i18n/hu';
 import { PasswordInput } from '@/components/auth/PasswordInput';
 
@@ -96,7 +97,7 @@ interface RegisterFormProps {
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onError }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registrationSuccess] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const router = useRouter();
 
@@ -107,6 +108,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onError }
     username: string;
     displayName: string;
   }) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { confirmPassword, ...submitData } = values;
     setIsLoading(true);
     try {
       const { confirmPassword, ...registerData } = values;
@@ -211,10 +214,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onError }
           onSubmit={handleSubmit}
         >
           {({ errors, touched, values, setFieldValue }) => {
-            const strength = useMemo(() => estimateStrength(values.password), [values.password]);
-            const confirmRef = useRef<HTMLInputElement | null>(null);
-
-            // Debounced inputs for availability
+            const strength = estimateStrength(values.password);
             const debouncedEmail = useDebouncedValue(values.email, 500);
             const debouncedUsername = useDebouncedValue(values.username, 500);
 

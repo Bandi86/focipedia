@@ -13,13 +13,13 @@ import {
   BarChart3,
   Menu,
   X,
-  ChevronRight,
+
   Newspaper,
   Trophy,
   Bell,
   Heart,
   TrendingUp,
-  Search
+
 } from 'lucide-react';
 
 interface DashboardLayoutProps {

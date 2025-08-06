@@ -51,7 +51,7 @@ export default function CreatePostWidget() {
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-2">
                   <button className="p-2 text-gray-500 hover:text-green-600 dark:hover:text-green-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    <Image className="w-4 h-4" />
+                    <Image className="w-4 h-4" aria-hidden="true" />
                   </button>
                   <button className="p-2 text-gray-500 hover:text-green-600 dark:hover:text-green-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                     <Smile className="w-4 h-4" />

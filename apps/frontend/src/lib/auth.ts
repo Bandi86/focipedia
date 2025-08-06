@@ -189,4 +189,7 @@ export const auth = {
     const response = await authAPI.resetPassword({ token, password });
     return response.data;
   },
-}; 
+};
+
+// Export useAuth hook from separate file
+export { useAuth } from './auth-hooks'; 

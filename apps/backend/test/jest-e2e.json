@@ -23,7 +23,7 @@
       "statements": 80
     }
   },
-  "setupFilesAfterEnv": ["<rootDir>/test/setup.ts"],
+  "setupFilesAfterEnv": ["<rootDir>/setup.ts"],
   "testTimeout": 30000,
   "verbose": true,
   "forceExit": true,

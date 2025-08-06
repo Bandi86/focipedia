@@ -11,6 +11,11 @@ import { WidgetGrid, Widget, WidgetHeader, WidgetContent } from '@/components/da
 const WelcomeWidget = lazy(() => import('@/components/dashboard/WelcomeWidget'));
 const StatsWidget = lazy(() => import('@/components/dashboard/StatsWidget'));
 const ActivityFeed = lazy(() => import('@/components/dashboard/ActivityFeed'));
+const FeedWidget = lazy(() => import('@/components/dashboard/FeedWidget'));
+
+// Import data loaders
+import { TrendingPostsDataLoader } from '@/components/data';
+import { PostListSkeleton } from '@/components/ui/skeletons';
 
 function CardSkeleton({ title }: { title?: string }) {
   return (
@@ -94,6 +99,14 @@ export default function DashboardPage() {
           <div className="col-span-1 md:col-span-2" style={{ minHeight: 240 }}>
             <Suspense fallback={<CardSkeleton title="Recent Activity" />}>
               <ActivityFeed className="h-full" />
+            </Suspense>
+          </div>
+
+          <div className="col-span-1 md:col-span-2" style={{ minHeight: 400 }}>
+            <Suspense fallback={<CardSkeleton title="Feed" />}>
+              <TrendingPostsDataLoader limit={3} fallback={<PostListSkeleton count={3} />}>
+                {(posts) => <FeedWidget posts={posts} />}
+              </TrendingPostsDataLoader>
             </Suspense>
           </div>
 

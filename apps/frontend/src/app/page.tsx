@@ -1,55 +1,31 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/auth';
-import { LandingPage } from '@/components/landing/LandingPage';
+import React from 'react';
 import { hu } from '@/lib/i18n/hu';
 
 export default function HomePage() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Check if user is authenticated
-        const authenticated = auth.isAuthenticated();
-        setIsAuthenticated(authenticated);
-        
-        if (authenticated) {
-          // If authenticated, redirect to dashboard
-          router.replace('/dashboard');
-          return;
-        }
-      } catch (error) {
-        console.error('Auth check error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  // Show loading spinner while checking auth
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-600 mx-auto" aria-label={hu.common.loading}></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">{hu.common.loading}</p>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          {hu.common.appName}
+        </h1>
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+          {hu.common.tagline}
+        </p>
+        <div className="space-x-4">
+          <a
+            href="/login"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors inline-block"
+          >
+            {hu.common.buttons.signIn}
+          </a>
+          <a
+            href="/register"
+            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors inline-block"
+          >
+            {hu.common.buttons.signUp}
+          </a>
         </div>
       </div>
-    );
-  }
-
-  // If authenticated, show nothing (will redirect to dashboard)
-  if (isAuthenticated) {
-    return null;
-  }
-
-  // Show landing page for non-authenticated users
-  return <LandingPage />;
+    </div>
+  );
 }

@@ -12,10 +12,9 @@ export type EnvSchema = Record<string, z.ZodTypeAny>;
 
 export function loadEnv<T extends EnvSchema>(schema: T) {
   // Build an object from process.env where available; in browsers this is undefined
-  const source: Record<string, unknown> =
-    typeof process !== 'undefined' && (process as any).env
-      ? (process as any).env
-      : ({} as Record<string, unknown>);
+  // Guard all references to "process" to satisfy TypeScript in non-Node builds
+  const hasProcess = typeof process !== 'undefined' && typeof (process as any).env !== 'undefined';
+  const source: Record<string, unknown> = hasProcess ? ((process as any).env as Record<string, unknown>) : {};
 
   const zodObject = z.object(schema as any);
 

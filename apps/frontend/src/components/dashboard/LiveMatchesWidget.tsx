@@ -101,7 +101,7 @@ export default function LiveMatchesWidget() {
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-red-600 dark:text-red-400" />
                     <span className="text-sm font-medium text-red-600 dark:text-red-400">
-                      {match.minute}'
+                      {match.minute}&apos;
                     </span>
                   </div>
                   <button className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium">

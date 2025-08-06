@@ -15,9 +15,11 @@ Focipedia egy olyan kozossegi oldal ahol a felhasznaloi kozotti kozossegi kapcso
   - pnpm: "9.12.0"
 
 ## Project setup
+
 pnpm, husky, eslint, prettier, typscript latest version.
 
 ## Project structure
+
 - apps/
   - frontend/
   - backend/
@@ -27,7 +29,9 @@ pnpm, husky, eslint, prettier, typscript latest version.
   - types/
 
 ## Frontend
+
 Dependencies:
+
 - Nextjs 15.4.5
 - React latest
 - Tailwind CSS latest
@@ -38,7 +42,9 @@ Dependencies:
 - tanstack query latest version for fetching data
 
 ## Backend
+
 Dependencies:
+
 - NestJS 11.0.0
 - Prisma 5.20.0
 - PostgreSQL 16.4
@@ -55,21 +61,23 @@ Dependencies:
 - caching with redis
 - rate limiter
 
-
 ## Frontend visual design
+
 Kezdo oldal: szep modern design sportos szinek animaciok. innen kell regisztralni az oldalra ami elvisz a dashboardra.
 Dashboard tartalma: logo navbar grid layout. kesobb kiderul lesz a dashboard tartalma addig csak egy egszeru mock.
 Authentikacio secure modern kijelentkezes middlewarek
 Szerver komponensek, gyors betoltes skeleton, pre fetch, caching, tanstack quary, szep loading animation, szep login register formok.
 
 ## Backend kezdeti alapok:
+
 gateway modul:
+
 - health check
 - auth
 - user
 - profile
 - settings
-KESOBB:
+  KESOBB:
 - notifications
 - messages
 - friends

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { hu } from '@/lib/i18n/hu';
 import { Widget, WidgetHeader, WidgetContent } from './WidgetGrid';
-import { UserPlus, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 
 interface SuggestedUser {
   id: string;

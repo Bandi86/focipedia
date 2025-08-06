@@ -5,7 +5,7 @@ import { auth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import { hu } from '@/lib/i18n/hu';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
-import { WidgetGrid, Widget, WidgetHeader, WidgetContent } from '@/components/dashboard/WidgetGrid';
+import { WidgetGrid } from '@/components/dashboard/WidgetGrid';
 import CommunityWidget from '@/components/dashboard/CommunityWidget';
 import SuggestedUsersWidget from '@/components/dashboard/SuggestedUsersWidget';
 

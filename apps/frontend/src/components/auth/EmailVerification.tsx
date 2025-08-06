@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/auth';
@@ -27,29 +27,7 @@ export const EmailVerification: React.FC<EmailVerificationProps> = ({
   const token = searchParams.get('token');
   const currentUser = auth.getCurrentUser();
 
-  useEffect(() => {
-    if (token) {
-      handleVerifyEmail(token);
-    }
-  }, [token]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (resendCooldown > 0) {
-      interval = setInterval(() => {
-        setResendCooldown((prev) => {
-          if (prev <= 1) {
-            setCanResend(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [resendCooldown]);
-
-  const handleVerifyEmail = async (verificationToken: string) => {
+  const handleVerifyEmail = useCallback(async (verificationToken: string) => {
     setIsVerifying(true);
     try {
       const result = await auth.verifyEmail(verificationToken);
@@ -77,7 +55,29 @@ export const EmailVerification: React.FC<EmailVerificationProps> = ({
     } finally {
       setIsVerifying(false);
     }
-  };
+  }, [onSuccess, onError, router]);
+
+  useEffect(() => {
+    if (token) {
+      handleVerifyEmail(token);
+    }
+  }, [token, handleVerifyEmail]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (resendCooldown > 0) {
+      interval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
 
   const handleResendVerification = async () => {
     if (!currentUser?.email || !canResend) return;

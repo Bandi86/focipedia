@@ -19,6 +19,8 @@ import { UserModule } from './modules/user/user.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { GatewayModule } from './modules/gateway/gateway.module';
+import { PostModule } from './modules/post/post.module';
+import { CommentModule } from './modules/comment/comment.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { GatewayModule } from './modules/gateway/gateway.module';
     ProfileModule,
     SettingsModule,
     GatewayModule,
+    PostModule,
+    CommentModule,
   ],
   providers: [...databaseProviders, ...redisProviders],
 })

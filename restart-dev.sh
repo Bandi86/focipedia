@@ -30,27 +30,36 @@ docker compose up redis -d
 # Start backend
 echo "🚀 Starting backend..."
 cd apps/backend
-node dist/main.js &
+npm run start:dev &
 BACKEND_PID=$!
 cd ../..
 echo "✅ Backend started with PID: $BACKEND_PID"
 
 # Wait for backend to start
 echo "⏳ Waiting for backend to start..."
-sleep 5
+sleep 10
 
 # Test backend
 if curl -s http://localhost:3001/api/health >/dev/null; then
     echo "✅ Backend is responding"
 else
     echo "❌ Backend is not responding"
-    exit 1
+    echo "Checking backend logs..."
+    ps aux | grep "nest start" | grep -v grep
+    echo "Trying to check if backend is starting..."
+    sleep 5
+    if curl -s http://localhost:3001/api/health >/dev/null; then
+        echo "✅ Backend is now responding"
+    else
+        echo "❌ Backend is still not responding"
+        exit 1
+    fi
 fi
 
 # Start frontend
 echo "🌐 Starting frontend..."
 cd apps/frontend
-npx next dev --turbopack &
+npm run dev &
 FRONTEND_PID=$!
 cd ../..
 echo "✅ Frontend started with PID: $FRONTEND_PID"

@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState } from 'react';
 import { Navigation } from './Navigation';
 import { HeroSection } from './HeroSection';
 import { FeaturesSection } from './FeaturesSection';
@@ -69,32 +68,8 @@ function DialogDescription({ children }: { children: React.ReactNode }) {
 }
 
 export function LandingPage() {
-  const router = useRouter();
-  const search = useSearchParams();
-
-  const initialAuth = useMemo(() => {
-    const a = search?.get('auth');
-    return a === 'login' || a === 'register' ? a : null;
-  }, [search]);
-
-  const [authModal, setAuthModal] = useState<'login' | 'register' | null>(initialAuth);
+  const [authModal, setAuthModal] = useState<'login' | 'register' | null>(null);
   const [loginPrefillData, setLoginPrefillData] = useState<{ emailOrUsername: string; password: string } | undefined>();
-
-  // Keep URL in sync when authModal changes
-  useEffect(() => {
-    const a = search?.get('auth');
-    const want = authModal;
-    if (!want && a) {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('auth');
-      router.replace(url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '') + url.hash);
-    } else if (want && a !== want) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('auth', want);
-      router.replace(url.pathname + '?' + url.searchParams.toString() + url.hash);
-    }
-     
-  }, [authModal]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">

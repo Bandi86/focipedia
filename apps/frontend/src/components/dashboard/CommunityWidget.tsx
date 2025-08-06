@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { hu } from '@/lib/i18n/hu';
 import { Widget, WidgetHeader, WidgetContent } from './WidgetGrid';
-import { Search, UserPlus, Users, MapPin } from 'lucide-react';
+import { Search, Users, MapPin } from 'lucide-react';
 
 interface User {
   id: string;

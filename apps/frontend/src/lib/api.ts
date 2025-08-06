@@ -94,4 +94,87 @@ export const settingsAPI = {
 export const healthAPI = {
   check: () => api.get('/health'),
   ready: () => api.get('/health/ready'),
+};
+
+export const postAPI = {
+  // Get all posts with optional filtering
+  getPosts: (params?: {
+    page?: number;
+    limit?: number;
+    authorId?: string;
+    isPublished?: boolean;
+  }) => api.get('/posts', { params }),
+  
+  // Get a specific post by ID
+  getPost: (id: string) => api.get(`/posts/${id}`),
+  
+  // Create a new post
+  createPost: (data: {
+    title: string;
+    content: string;
+    isPublished?: boolean;
+  }) => api.post('/posts', data),
+  
+  // Update a post
+  updatePost: (id: string, data: {
+    title?: string;
+    content?: string;
+    isPublished?: boolean;
+  }) => api.put(`/posts/${id}`, data),
+  
+  // Delete a post
+  deletePost: (id: string) => api.delete(`/posts/${id}`),
+  
+  // Get posts by author
+  getPostsByAuthor: (authorId: string, params?: {
+    page?: number;
+    limit?: number;
+  }) => api.get(`/posts/author/${authorId}`, { params }),
+};
+
+export const commentAPI = {
+  // Get all comments with optional filtering
+  getComments: (params?: {
+    page?: number;
+    limit?: number;
+    postId?: string;
+    authorId?: string;
+    parentId?: string;
+  }) => api.get('/comments', { params }),
+  
+  // Get a specific comment by ID
+  getComment: (id: string) => api.get(`/comments/${id}`),
+  
+  // Create a new comment
+  createComment: (data: {
+    content: string;
+    postId: string;
+    parentId?: string;
+  }) => api.post('/comments', data),
+  
+  // Update a comment
+  updateComment: (id: string, data: {
+    content: string;
+  }) => api.put(`/comments/${id}`, data),
+  
+  // Delete a comment
+  deleteComment: (id: string) => api.delete(`/comments/${id}`),
+  
+  // Get comments by post
+  getCommentsByPost: (postId: string, params?: {
+    page?: number;
+    limit?: number;
+  }) => api.get(`/comments/post/${postId}`, { params }),
+  
+  // Get comments by author
+  getCommentsByAuthor: (authorId: string, params?: {
+    page?: number;
+    limit?: number;
+  }) => api.get(`/comments/author/${authorId}`, { params }),
+  
+  // Get replies to a comment
+  getRepliesByComment: (commentId: string, params?: {
+    page?: number;
+    limit?: number;
+  }) => api.get(`/comments/replies/${commentId}`, { params }),
 }; 

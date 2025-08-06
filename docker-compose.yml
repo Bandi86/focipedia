@@ -39,29 +39,15 @@ services:
       - focipedia-network
     restart: unless-stopped
 
-  # Backend API (NestJS)
+  # Backend disabled build (run locally instead)
   backend:
-    build:
-      context: .
-      dockerfile: apps/backend/Dockerfile.simple
+    image: focipedia-backend-local-disabled
     container_name: focipedia-backend
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/focipedia?schema=public
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
-      PORT: 3001
-      NODE_ENV: production
-      FRONTEND_ORIGIN: http://localhost:3000
-    ports:
-      - "3001:3001"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    deploy:
+      replicas: 0
     networks:
       - focipedia-network
-    restart: unless-stopped
+    restart: "no"
 
   # Frontend (Next.js)
   frontend:

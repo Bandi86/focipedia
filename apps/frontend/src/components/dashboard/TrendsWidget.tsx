@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { hu } from '@/lib/i18n/hu';
 import { Widget, WidgetHeader, WidgetContent } from './WidgetGrid';
-import { TrendingUp, Hash, Users, Trophy, User } from 'lucide-react';
+import { TrendingUp, Hash, Trophy, User } from 'lucide-react';
 
 interface TrendItem {
   id: string;

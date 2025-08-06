@@ -31,7 +31,7 @@ function TestimonialCard({ name, role, avatar, content, rating, delay = '' }: Te
 
       {/* Content */}
       <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed italic">
-        "{content}"
+        &ldquo;{content}&rdquo;
       </p>
 
       {/* Rating */}

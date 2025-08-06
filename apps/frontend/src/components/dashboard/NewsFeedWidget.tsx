@@ -99,19 +99,7 @@ export default function NewsFeedWidget() {
     }));
   };
 
-  const formatHashtags = (content: string, hashtags?: string[]) => {
-    if (!hashtags) return content;
-    
-    let formattedContent = content;
-    hashtags.forEach(tag => {
-      formattedContent = formattedContent.replace(
-        tag,
-        `<span class="text-green-600 dark:text-green-400 font-medium">${tag}</span>`
-      );
-    });
-    
-    return formattedContent;
-  };
+
 
   return (
     <Widget>

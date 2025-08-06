@@ -5,7 +5,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+
 import { auth } from '@/lib/auth';
 import { hu } from '@/lib/i18n/hu';
 import { PasswordInput } from '@/components/auth/PasswordInput';
