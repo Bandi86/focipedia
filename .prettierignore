@@ -1,0 +1,6 @@
+apps/backend/dist
+apps/backend/generated
+apps/frontend/.next
+node_modules
+pnpm-lock.yaml
+
