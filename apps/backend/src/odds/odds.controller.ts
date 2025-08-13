@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { OddsService } from './odds.service';
 
 @Controller('odds')
@@ -16,17 +16,17 @@ export class OddsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.oddsService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.oddsService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOddDto: any) {
-    return this.oddsService.update(+id, updateOddDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateOddDto: any) {
+    return this.oddsService.update(id, updateOddDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.oddsService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.oddsService.remove(id);
   }
 }

@@ -93,5 +93,13 @@ export default [
       'react/jsx-uses-react': 'off', // Not needed for Next.js 17+
     },
   },
+  {
+    files: ['apps/backend/**/*.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
   prettierConfig,
 ];

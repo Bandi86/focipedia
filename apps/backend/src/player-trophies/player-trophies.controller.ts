@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { PlayerTrophiesService } from './player-trophies.service';
 
 @Controller('player-trophies')
@@ -16,17 +16,17 @@ export class PlayerTrophiesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.playerTrophiesService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.playerTrophiesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePlayerTrophyDto: any) {
-    return this.playerTrophiesService.update(+id, updatePlayerTrophyDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updatePlayerTrophyDto: any) {
+    return this.playerTrophiesService.update(id, updatePlayerTrophyDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.playerTrophiesService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.playerTrophiesService.remove(id);
   }
 }

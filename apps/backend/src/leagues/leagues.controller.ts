@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { LeaguesService } from './leagues.service';
 
 @Controller('leagues')
@@ -16,17 +16,17 @@ export class LeaguesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.leaguesService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.leaguesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLeagueDto: any) {
-    return this.leaguesService.update(+id, updateLeagueDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateLeagueDto: any) {
+    return this.leaguesService.update(id, updateLeagueDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.leaguesService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.leaguesService.remove(id);
   }
 }

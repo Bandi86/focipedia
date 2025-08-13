@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { MatchesService } from './matches.service';
 
 @Controller('matches')
@@ -37,22 +37,22 @@ export class MatchesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.matchesService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.matchesService.findOne(id);
   }
 
   @Get(':id/details')
-  findMatchDetails(@Param('id') id: string) {
-    return this.matchesService.findMatchDetails(+id);
+  findMatchDetails(@Param('id', ParseIntPipe) id: number) {
+    return this.matchesService.findMatchDetails(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMatchDto: any) {
-    return this.matchesService.update(+id, updateMatchDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateMatchDto: any) {
+    return this.matchesService.update(id, updateMatchDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.matchesService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.matchesService.remove(id);
   }
 }
