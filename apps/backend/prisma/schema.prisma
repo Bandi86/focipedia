@@ -9,6 +9,10 @@ datasource db {
 }
 
 // ENUMS
+enum UserRole {
+  USER
+  ADMIN
+}
 enum PlayerPosition {
   Goalkeeper
   Defender
@@ -40,6 +44,16 @@ enum TransferType {
 }
 
 // MODELS
+
+model User {
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         UserRole @default(USER)
+}
 
 model Team {
   id          Int      @id @default(autoincrement())

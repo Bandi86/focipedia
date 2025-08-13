@@ -16,6 +16,8 @@ import { TrophiesModule } from './trophies/trophies.module';
 import { PlayerTrophiesModule } from './player-trophies/player-trophies.module';
 import { OddsModule } from './odds/odds.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { PrismaModule } from './prisma/prisma.module';
     PlayerTrophiesModule,
     OddsModule,
     PrismaModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
