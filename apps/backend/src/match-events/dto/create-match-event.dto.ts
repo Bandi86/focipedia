@@ -6,7 +6,7 @@ export class CreateMatchEventDto {
   @Min(0)
   minute!: number;
 
-  @IsEnum($Enums.MatchEventType)
+  @IsEnum(['Goal', 'YellowCard', 'RedCard', 'Substitution'])
   type!: $Enums.MatchEventType;
 
   @IsInt()

@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from '@nestjs/common';
 import { PlayersService } from './players.service';
 import { CreatePlayerDto } from './dto/create-player.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('players')
 @Controller('players')
@@ -15,8 +16,21 @@ export class PlayersController {
   }
 
   @Get()
-  findAll() {
-    return this.playersService.findAll();
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 20 })
+  @ApiQuery({ name: 'sortBy', required: false, example: 'createdAt' })
+  @ApiQuery({ name: 'sortOrder', required: false, example: 'desc', enum: ['asc', 'desc'] })
+  @ApiOkResponse({
+    description: 'List players (paginated)',
+    schema: {
+      example: [
+        { id: 1, name: 'John Doe', nationality: 'HU', position: 'Forward', teamId: 1 },
+        { id: 2, name: 'Jane Smith', nationality: 'HU', position: 'Midfielder', teamId: 2 },
+      ],
+    },
+  })
+  findAll(@Query() q: PaginationDto) {
+    return this.playersService.findAll(q);
   }
 
   @Get(':id')

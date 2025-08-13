@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreatePlayerSeasonStatDto } from './dto/create-player-season-stat.dto';
+import { UpdatePlayerSeasonStatDto } from './dto/update-player-season-stat.dto';
 
 @Injectable()
 export class PlayerSeasonStatsService {
   constructor(private prisma: PrismaService) {}
 
-  create(createPlayerSeasonStatDto: any) {
+  create(createPlayerSeasonStatDto: CreatePlayerSeasonStatDto) {
     return this.prisma.playerSeasonStats.create({ data: createPlayerSeasonStatDto });
   }
 
@@ -17,7 +19,7 @@ export class PlayerSeasonStatsService {
     return this.prisma.playerSeasonStats.findUnique({ where: { id } });
   }
 
-  update(id: number, updatePlayerSeasonStatDto: any) {
+  update(id: number, updatePlayerSeasonStatDto: UpdatePlayerSeasonStatDto) {
     return this.prisma.playerSeasonStats.update({ where: { id }, data: updatePlayerSeasonStatDto });
   }
 

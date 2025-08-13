@@ -1,0 +1,22 @@
+{
+  "appName": "Focipedia",
+  "hero": {
+    "title": "Welcome to Focipedia",
+    "highlight": "community",
+    "subtitle": "Social football encyclopedia – live data, stats, community."
+  },
+  "buttons": {
+    "login": "Sign in",
+    "register": "Sign up",
+    "close": "Close"
+  },
+  "status": "System status"
+  ,
+  "statsSection": {
+    "title": "Statistics",
+    "players": "Players",
+    "teams": "Teams",
+    "matches": "Matches",
+    "trophies": "Trophies"
+  }
+}

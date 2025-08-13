@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreatePlayerTrophyDto } from './dto/create-player-trophy.dto';
+import { UpdatePlayerTrophyDto } from './dto/update-player-trophy.dto';
 
 @Injectable()
 export class PlayerTrophiesService {
   constructor(private prisma: PrismaService) {}
 
-  create(createPlayerTrophyDto: any) {
+  create(createPlayerTrophyDto: CreatePlayerTrophyDto) {
     return this.prisma.playerTrophy.create({ data: createPlayerTrophyDto });
   }
 
@@ -17,7 +19,7 @@ export class PlayerTrophiesService {
     return this.prisma.playerTrophy.findUnique({ where: { id } });
   }
 
-  update(id: number, updatePlayerTrophyDto: any) {
+  update(id: number, updatePlayerTrophyDto: UpdatePlayerTrophyDto) {
     return this.prisma.playerTrophy.update({ where: { id }, data: updatePlayerTrophyDto });
   }
 

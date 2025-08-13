@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreatePlayerMatchStatDto } from './dto/create-player-match-stat.dto';
+import { UpdatePlayerMatchStatDto } from './dto/update-player-match-stat.dto';
 
 @Injectable()
 export class PlayerMatchStatsService {
   constructor(private prisma: PrismaService) {}
 
-  create(createPlayerMatchStatDto: any) {
+  create(createPlayerMatchStatDto: CreatePlayerMatchStatDto) {
     return this.prisma.playerMatchStats.create({ data: createPlayerMatchStatDto });
   }
 
@@ -17,7 +19,7 @@ export class PlayerMatchStatsService {
     return this.prisma.playerMatchStats.findUnique({ where: { id } });
   }
 
-  update(id: number, updatePlayerMatchStatDto: any) {
+  update(id: number, updatePlayerMatchStatDto: UpdatePlayerMatchStatDto) {
     return this.prisma.playerMatchStats.update({ where: { id }, data: updatePlayerMatchStatDto });
   }
 

@@ -1,0 +1,22 @@
+{
+  "appName": "Focipedia",
+  "hero": {
+    "title": "Üdvözöl a Focipedia",
+    "highlight": "közösségében",
+    "subtitle": "Közösségi futball enciklopédia – élő adatok, statok, közösség."
+  },
+  "buttons": {
+    "login": "Bejelentkezés",
+    "register": "Regisztráció",
+    "close": "Bezárás"
+  },
+  "status": "Rendszer státusz"
+  ,
+  "statsSection": {
+    "title": "Statisztikák",
+    "players": "Játékosok",
+    "teams": "Csapatok",
+    "matches": "Mérkőzések",
+    "trophies": "Trófeák"
+  }
+}

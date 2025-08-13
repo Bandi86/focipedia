@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateOddDto } from './dto/create-odd.dto';
+import { UpdateOddDto } from './dto/update-odd.dto';
 
 @Injectable()
 export class OddsService {
   constructor(private prisma: PrismaService) {}
 
-  create(createOddDto: any) {
+  create(createOddDto: CreateOddDto) {
     return this.prisma.odd.create({ data: createOddDto });
   }
 
@@ -17,7 +19,7 @@ export class OddsService {
     return this.prisma.odd.findUnique({ where: { id } });
   }
 
-  update(id: number, updateOddDto: any) {
+  update(id: number, updateOddDto: UpdateOddDto) {
     return this.prisma.odd.update({ where: { id }, data: updateOddDto });
   }
 

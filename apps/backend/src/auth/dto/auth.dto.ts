@@ -14,6 +14,11 @@ export class RegisterDto {
   @ApiProperty({ required: false })
   @IsString()
   name?: string;
+
+  @ApiProperty()
+  @IsString()
+  @MinLength(3)
+  username!: string;
 }
 
 export class LoginDto {

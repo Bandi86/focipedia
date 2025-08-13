@@ -1,4 +1,4 @@
-import { IsDateString, IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsBoolean, IsDateString, IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { $Enums } from '@prisma/client';
 
 const MATCH_STATUS = [
@@ -21,6 +21,10 @@ export class CreateMatchDto {
   @IsOptional()
   @IsString()
   round?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isCup?: boolean;
 
   @IsIn(MATCH_STATUS as unknown as string[])
   status!: $Enums.MatchStatus;

@@ -9,7 +9,7 @@ export class CreateTransferDto {
   @IsNumber()
   transferFee?: number;
 
-  @IsEnum($Enums.TransferType)
+  @IsEnum(['Permanent', 'Loan', 'FreeAgent', 'EndOfLoan'])
   transferType!: $Enums.TransferType;
 
   @IsInt()

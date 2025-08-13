@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateTransferDto } from './dto/create-transfer.dto';
+import { UpdateTransferDto } from './dto/update-transfer.dto';
 
 @Injectable()
 export class TransfersService {
   constructor(private prisma: PrismaService) {}
 
-  create(createTransferDto: any) {
+  create(createTransferDto: CreateTransferDto) {
     return this.prisma.transfer.create({ data: createTransferDto });
   }
 
@@ -17,7 +19,7 @@ export class TransfersService {
     return this.prisma.transfer.findUnique({ where: { id } });
   }
 
-  update(id: number, updateTransferDto: any) {
+  update(id: number, updateTransferDto: UpdateTransferDto) {
     return this.prisma.transfer.update({ where: { id }, data: updateTransferDto });
   }
 

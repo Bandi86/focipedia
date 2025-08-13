@@ -1,17 +1,31 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { MatchStatus } from '../../generated/prisma/client';
+import { MatchStatus } from '@prisma/client';
+import { Cache } from 'cache-manager';
+import { Inject } from '@nestjs/common';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class MatchesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, @Inject('CACHE_MANAGER') private cache: Cache) {}
 
-  create(createMatchDto: any) {
+  create(createMatchDto: { matchDate: string; stadium?: string; round?: string; isCup?: boolean; status: MatchStatus; homeTeamId: number; awayTeamId: number; leagueId: number; homeScore?: number; awayScore?: number }) {
     return this.prisma.match.create({ data: createMatchDto });
   }
 
-  findAll() {
-    return this.prisma.match.findMany({
+  async findAll(p: PaginationDto, leagueId?: number) {
+    const page = p.page ?? 1;
+    const limit = p.limit ?? 20;
+    const skip = (page - 1) * limit;
+    const orderBy = p.sortBy ? { [p.sortBy]: p.sortOrder ?? 'asc' } : { matchDate: 'desc' as const };
+    const cacheKey = `matches:list:${page}:${limit}:${p.sortBy ?? 'matchDate'}:${p.sortOrder ?? 'desc'}:${leagueId ?? 'all'}`;
+    const cached = await this.cache.get(cacheKey);
+    if (cached) return cached as any;
+    const data = await this.prisma.match.findMany({
+      skip,
+      take: limit,
+      orderBy,
+      where: leagueId ? { leagueId } : undefined,
       include: {
         homeTeam: true,
         awayTeam: true,
@@ -19,10 +33,15 @@ export class MatchesService {
         odds: true,
       },
     });
+    await this.cache.set(cacheKey, data, 30_000);
+    return data;
   }
 
-  findPublicMatches() {
-    return this.prisma.match.findMany({
+  async findPublicMatches() {
+    const cacheKey = `matches:public`;
+    const cached = await this.cache.get(cacheKey);
+    if (cached) return cached as any;
+    const data = await this.prisma.match.findMany({
       where: {
         OR: [{ status: MatchStatus.Scheduled }, { status: MatchStatus.Live }],
       },
@@ -36,6 +55,8 @@ export class MatchesService {
         odds: true,
       },
     });
+    await this.cache.set(cacheKey, data, 30_000);
+    return data;
   }
 
   async findOne(id: number) {
@@ -98,8 +119,11 @@ export class MatchesService {
     return match;
   }
 
-  findUpcomingMatches() {
-    return this.prisma.match.findMany({
+  async findUpcomingMatches() {
+    const cacheKey = `matches:upcoming`;
+    const cached = await this.cache.get(cacheKey);
+    if (cached) return cached as any;
+    const data = await this.prisma.match.findMany({
       where: {
         matchDate: {
           gte: new Date(),
@@ -116,10 +140,15 @@ export class MatchesService {
         odds: true,
       },
     });
+    await this.cache.set(cacheKey, data, 30_000);
+    return data;
   }
 
-  findLiveMatches() {
-    return this.prisma.match.findMany({
+  async findLiveMatches() {
+    const cacheKey = `matches:live`;
+    const cached = await this.cache.get(cacheKey);
+    if (cached) return cached as any;
+    const data = await this.prisma.match.findMany({
       where: {
         status: MatchStatus.Live,
       },
@@ -130,10 +159,15 @@ export class MatchesService {
         odds: true,
       },
     });
+    await this.cache.set(cacheKey, data, 15_000);
+    return data;
   }
 
-  findFinishedMatches() {
-    return this.prisma.match.findMany({
+  async findFinishedMatches() {
+    const cacheKey = `matches:finished`;
+    const cached = await this.cache.get(cacheKey);
+    if (cached) return cached as any;
+    const data = await this.prisma.match.findMany({
       where: {
         status: MatchStatus.Finished,
       },
@@ -147,9 +181,11 @@ export class MatchesService {
         odds: true,
       },
     });
+    await this.cache.set(cacheKey, data, 60_000);
+    return data;
   }
 
-  update(id: number, updateMatchDto: any) {
+  update(id: number, updateMatchDto: Partial<{ matchDate: string; stadium?: string; round?: string; isCup?: boolean; status: MatchStatus; homeTeamId: number; awayTeamId: number; leagueId: number; homeScore?: number; awayScore?: number }>) {
     return this.prisma.match.update({ where: { id }, data: updateMatchDto });
   }
 

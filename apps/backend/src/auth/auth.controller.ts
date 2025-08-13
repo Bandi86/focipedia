@@ -1,9 +1,10 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RefreshDto } from './dto/refresh.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -17,7 +18,7 @@ export class AuthController {
   async register(@Body() dto: RegisterDto) {
     const passwordHash = await this.auth.hashPassword(dto.password);
     const user = await this.prisma.user.create({
-      data: { email: dto.email, passwordHash, name: dto.name },
+      data: { email: dto.email, username: dto.username, passwordHash, name: dto.name },
     });
     const tokens = await this.auth.issueTokens(user.id, user.email, user.role);
     return {
@@ -37,6 +38,24 @@ export class AuthController {
     };
   }
 
+  @Get('availability')
+  async availability(
+    @Query('email') email?: string,
+    @Query('name') name?: string,
+    @Query('username') username?: string,
+  ) {
+    const [emailUser, nameUser, usernameUser] = await Promise.all([
+      email ? this.prisma.user.findUnique({ where: { email } }) : Promise.resolve(null),
+      name ? this.prisma.user.findFirst({ where: { name } }) : Promise.resolve(null),
+      username ? this.prisma.user.findUnique({ where: { username } }) : Promise.resolve(null),
+    ]);
+    return {
+      emailTaken: Boolean(emailUser || false),
+      nameTaken: Boolean(nameUser || false),
+      usernameTaken: Boolean(usernameUser || false),
+    };
+  }
+
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
   async refresh(@Body() dto: RefreshDto) {
@@ -51,5 +70,21 @@ export class AuthController {
       user: user && { id: user.id, email: user.email, name: user.name, role: user.role },
       ...tokens,
     };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  me(@Req() req: any) {
+    return req.user;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete('logout')
+  async logout(@Req() req: any) {
+    const userId = req.user?.userId;
+    if (userId) {
+      await this.prisma.user.update({ where: { id: userId }, data: { refreshTokenHash: null } });
+    }
   }
 }

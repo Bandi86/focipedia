@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -36,11 +35,38 @@ enum MatchStatus {
   Suspended
 }
 
+enum CompetitionType {
+  DomesticLeague
+  DomesticCup
+  InternationalClub
+  InternationalNational
+}
+
 enum TransferType {
   Permanent
   Loan
   FreeAgent
   EndOfLoan
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SubmissionTargetType {
+  TEAM
+  PLAYER
+  LEAGUE
+  MATCH
+  MATCH_EVENT
+  PLAYER_MATCH_STATS
+  PLAYER_SEASON_STATS
+  TRANSFER
+  TROPHY
+  PLAYER_TROPHY
+  ODD
 }
 
 // MODELS
@@ -50,10 +76,14 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   email        String   @unique
+  username     String   @unique
   passwordHash String
   name         String?
   role         UserRole @default(USER)
   refreshTokenHash String?
+
+  submissionsCreated Submission[] @relation("UserSubmissions")
+  reviews            Review[]     @relation("UserReviews")
 }
 
 model Team {
@@ -73,6 +103,8 @@ model Team {
   transfersFrom   Transfer[]         @relation("TransfersFrom")
   transfersTo     Transfer[]         @relation("TransfersTo")
   seasonStats     PlayerSeasonStats[]
+  teamSeasons     TeamSeason[]
+  standings       Standing[]
 }
 
 model Player {
@@ -107,10 +139,13 @@ model League {
   name      String
   country   String
   logoUrl   String?
+  competitionType CompetitionType @default(DomesticLeague)
 
   matches     Match[]
   teams       Team[]              @relation("LeagueTeams")
   seasonStats PlayerSeasonStats[]
+  leagueSeasons LeagueSeason[]
+  standings   Standing[]
 }
 
 model Match {
@@ -121,6 +156,7 @@ model Match {
   stadium   String?
   round     String?     // e.g., "Group Stage", "Quarter-final"
   status    MatchStatus @default(Scheduled)
+  isCup     Boolean     @default(false)
 
   homeTeamId  Int
   awayTeamId  Int
@@ -132,9 +168,18 @@ model Match {
   leagueId    Int
   league      League      @relation(fields: [leagueId], references: [id])
 
+  seasonId    Int?
+  season      Season?     @relation(fields: [seasonId], references: [id])
+
   events      MatchEvent[]
   playerStats PlayerMatchStats[]
   odds        Odd[]
+
+  @@index([leagueId, seasonId, status])
+  @@index([matchDate])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
+  @@unique([leagueId, seasonId, matchDate, homeTeamId, awayTeamId])
 }
 
 model MatchEvent {
@@ -196,7 +241,7 @@ model PlayerMatchStats {
 
 model PlayerSeasonStats {
   id              Int    @id @default(autoincrement())
-  season          String // e.g., "2023/2024"
+  season          String // e.g., "2023/2024" (legacy, consider replacing with seasonId)
   appearances     Int    @default(0)
   minutesPlayed   Int    @default(0)
   goals           Int    @default(0)
@@ -220,13 +265,17 @@ model PlayerSeasonStats {
   playerId Int
   teamId   Int
   leagueId Int
+  seasonId Int?
   player   Player @relation(fields: [playerId], references: [id])
   team     Team   @relation(fields: [teamId], references: [id])
   league   League @relation(fields: [leagueId], references: [id])
+  seasonRel   Season? @relation(fields: [seasonId], references: [id])
 
-  @@unique([playerId, teamId, leagueId, season])
+  @@unique([playerId, teamId, leagueId, seasonId, season])
   @@index([playerId])
   @@index([teamId])
+  @@index([leagueId])
+  @@index([seasonId])
 }
 
 model Transfer {
@@ -278,4 +327,108 @@ model Odd {
 
   matchId Int   @unique
   match   Match @relation(fields: [matchId], references: [id])
+}
+
+// Moderation models
+
+model Submission {
+  id          Int                 @id @default(autoincrement())
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  targetType  SubmissionTargetType
+  targetId    Int?
+  operation   String              // CREATE | UPDATE | DELETE
+  changes     Json                // proposed changes
+  status      ModerationStatus    @default(PENDING)
+
+  createdById Int
+  createdBy   User                @relation("UserSubmissions", fields: [createdById], references: [id])
+
+  reviews     Review[]
+
+  @@index([status])
+  @@index([targetType, targetId])
+}
+
+model Review {
+  id           Int              @id @default(autoincrement())
+  createdAt    DateTime         @default(now())
+  decision     ModerationStatus
+  comment      String?
+
+  reviewerId   Int
+  reviewer     User             @relation("UserReviews", fields: [reviewerId], references: [id])
+
+  submissionId Int
+  submission   Submission       @relation(fields: [submissionId], references: [id])
+
+  @@index([submissionId])
+}
+
+// New scheduling and table models
+
+model Season {
+  id          Int      @id @default(autoincrement())
+  name        String   // e.g., "2023/2024"
+  startDate   DateTime?
+  endDate     DateTime?
+
+  leagueSeasons LeagueSeason[]
+  matches       Match[]
+  standings     Standing[]
+  playerSeasonStats PlayerSeasonStats[]
+
+  @@unique([name])
+}
+
+model LeagueSeason {
+  id        Int    @id @default(autoincrement())
+  leagueId  Int
+  seasonId  Int
+
+  league    League @relation(fields: [leagueId], references: [id])
+  season    Season @relation(fields: [seasonId], references: [id])
+
+  teams     TeamSeason[]
+
+  @@unique([leagueId, seasonId])
+  @@index([leagueId])
+  @@index([seasonId])
+}
+
+model TeamSeason {
+  id             Int    @id @default(autoincrement())
+  teamId         Int
+  leagueSeasonId Int
+
+  team           Team         @relation(fields: [teamId], references: [id])
+  leagueSeason   LeagueSeason @relation(fields: [leagueSeasonId], references: [id])
+
+  @@unique([teamId, leagueSeasonId])
+  @@index([teamId])
+  @@index([leagueSeasonId])
+}
+
+model Standing {
+  id             Int    @id @default(autoincrement())
+  leagueId       Int
+  seasonId       Int
+  teamId         Int
+
+  played         Int    @default(0)
+  won            Int    @default(0)
+  drawn          Int    @default(0)
+  lost           Int    @default(0)
+  goalsFor       Int    @default(0)
+  goalsAgainst   Int    @default(0)
+  goalDifference Int    @default(0)
+  points         Int    @default(0)
+
+  league         League @relation(fields: [leagueId], references: [id])
+  season         Season @relation(fields: [seasonId], references: [id])
+  team           Team   @relation(fields: [teamId], references: [id])
+
+  @@unique([leagueId, seasonId, teamId])
+  @@index([leagueId, seasonId])
+  @@index([points, goalDifference, goalsFor])
 }

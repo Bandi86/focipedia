@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateMatchEventDto } from './dto/create-match-event.dto';
+import { UpdateMatchEventDto } from './dto/update-match-event.dto';
 
 @Injectable()
 export class MatchEventsService {
   constructor(private prisma: PrismaService) {}
 
-  create(createMatchEventDto: any) {
+  create(createMatchEventDto: CreateMatchEventDto) {
     return this.prisma.matchEvent.create({ data: createMatchEventDto });
   }
 
@@ -17,7 +19,7 @@ export class MatchEventsService {
     return this.prisma.matchEvent.findUnique({ where: { id } });
   }
 
-  update(id: number, updateMatchEventDto: any) {
+  update(id: number, updateMatchEventDto: UpdateMatchEventDto) {
     return this.prisma.matchEvent.update({ where: { id }, data: updateMatchEventDto });
   }
 

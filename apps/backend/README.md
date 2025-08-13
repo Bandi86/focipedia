@@ -41,10 +41,13 @@ pnpm --filter backend prisma:seed # Super Admin seed
 `.env` a `apps/backend/` alatt. Alapok:
 
 ```
-DATABASE_URL="postgresql://user:pass@localhost:5432/focipedia?schema=public"
-JWT_SECRET="change_me"
+PORT=3001
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/focipedia?schema=public"
+JWT_SECRET="change_me_in_prod"
 SEED_ADMIN_EMAIL="admin@example.com"
 SEED_ADMIN_PASSWORD="Admin123!"
+# Opcionális Redis cache:
+# REDIS_URL=redis://localhost:6379
 ```
 
 ### Auth végpontok
