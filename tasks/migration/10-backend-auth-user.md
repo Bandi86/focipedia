@@ -19,4 +19,19 @@ DoD
 Megjegyzések
 - Secret kezelés: `.env` és CI secret management
 
+Backlog (hivatkozások az archive-ra)
+- [ ] Strukturális audit: `archive/apps/backend/src/modules/auth/**`, `user/**`, `common/guards/**`, `common/decorators/**`
+- [ ] DTO-k összevetése és tervezés: `auth.dto.ts`, `user.dto.ts` → új DTO-k validációval
+- [ ] Strategy/Guard migráció: `strategies/jwt.strategy.ts`, `jwt-auth.guard.ts`
+- [ ] Token és email service-k: `token.service.ts`, `email.service.ts` (titokkezelés, retry, rate-limit)
+- [ ] Controller végpontok: `auth.controller.ts`, `user.controller.ts` → Swagger szerződések
+- [ ] Service logika: `auth.service.ts`, `user.service.ts` → jelszó hash, token élettartam
+- [ ] Konfiguráció: `config/configuration.ts` integrálása `.env`-vel
+- [ ] Tesztek átemelése/újraírása: `*.spec.ts` (smoke/unit)
+- [ ] DoD ellenőrzés és dokumentáció frissítés
+
+Kockázatok
+- Titkok és környezeti változók hiányosságai → `.env.example` bővítés
+- Token kezelés eltérései → Swagger és kliensek összehangolása
+
 
