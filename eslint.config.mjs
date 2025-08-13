@@ -8,7 +8,12 @@ import react from 'eslint-plugin-react';
 
 export default [
   {
-    ignores: ['apps/backend/dist/**', 'apps/frontend/.next/**', 'node_modules/**'],
+    ignores: [
+      'apps/backend/dist/**',
+      'apps/backend/generated/**',
+      'apps/frontend/.next/**',
+      'node_modules/**',
+    ],
   },
   {
     files: ['**/*.ts', '**/*.tsx'],

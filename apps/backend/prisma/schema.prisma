@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -12,4 +6,261 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ENUMS
+enum PlayerPosition {
+  Goalkeeper
+  Defender
+  Midfielder
+  Forward
+}
+
+enum MatchEventType {
+  Goal
+  YellowCard
+  RedCard
+  Substitution
+}
+
+enum MatchStatus {
+  Scheduled
+  Live
+  Finished
+  Canceled
+  Postponed
+  Suspended
+}
+
+enum TransferType {
+  Permanent
+  Loan
+  FreeAgent
+  EndOfLoan
+}
+
+// MODELS
+
+model Team {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  name        String   @unique
+  country     String
+  stadium     String?
+  logoUrl     String?
+  founded     Int?
+
+  players         Player[]
+  homeMatches     Match[]            @relation("HomeTeamMatches")
+  awayMatches     Match[]            @relation("AwayTeamMatches")
+  leagues         League[]           @relation("LeagueTeams")
+  transfersFrom   Transfer[]         @relation("TransfersFrom")
+  transfersTo     Transfer[]         @relation("TransfersTo")
+  seasonStats     PlayerSeasonStats[]
+}
+
+model Player {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  name          String
+  dateOfBirth   DateTime?
+  nationality   String
+  position      PlayerPosition
+  jerseyNumber  Int?
+  imageUrl      String?
+
+  teamId        Int
+  team          Team     @relation(fields: [teamId], references: [id])
+
+  matchStats    PlayerMatchStats[]
+  seasonStats   PlayerSeasonStats[]
+  transfers     Transfer[]         @relation("PlayerTransfers")
+  trophies      PlayerTrophy[]
+
+  matchEvents   MatchEvent[] @relation("PrimaryPlayerEvents")
+  assists       MatchEvent[] @relation("AssistingPlayerEvents")
+  subbedIn      MatchEvent[] @relation("SubstitutionIn")
+  subbedOut     MatchEvent[] @relation("SubstitutionOut")
+}
+
+model League {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  country   String
+  logoUrl   String?
+
+  matches     Match[]
+  teams       Team[]              @relation("LeagueTeams")
+  seasonStats PlayerSeasonStats[]
+}
+
+model Match {
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  matchDate DateTime
+  stadium   String?
+  round     String?     // e.g., "Group Stage", "Quarter-final"
+  status    MatchStatus @default(Scheduled)
+
+  homeTeamId  Int
+  awayTeamId  Int
+  homeScore   Int         @default(0)
+  awayScore   Int         @default(0)
+  homeTeam    Team        @relation("HomeTeamMatches", fields: [homeTeamId], references: [id])
+  awayTeam    Team        @relation("AwayTeamMatches", fields: [awayTeamId], references: [id])
+
+  leagueId    Int
+  league      League      @relation(fields: [leagueId], references: [id])
+
+  events      MatchEvent[]
+  playerStats PlayerMatchStats[]
+  odds        Odd[]
+}
+
+model MatchEvent {
+  id        Int            @id @default(autoincrement())
+  minute    Int
+  type      MatchEventType
+
+  matchId   Int
+  match     Match          @relation(fields: [matchId], references: [id])
+
+  playerId  Int
+  player    Player         @relation("PrimaryPlayerEvents", fields: [playerId], references: [id])
+
+  assistingPlayerId Int?
+  assistingPlayer   Player? @relation("AssistingPlayerEvents", fields: [assistingPlayerId], references: [id])
+
+  playerInId  Int?
+  playerOutId Int?
+  playerIn    Player?        @relation("SubstitutionIn", fields: [playerInId], references: [id])
+  playerOut   Player?        @relation("SubstitutionOut", fields: [playerOutId], references: [id])
+
+  @@index([matchId])
+  @@index([playerId])
+}
+
+model PlayerMatchStats {
+  id              Int    @id @default(autoincrement())
+  minutesPlayed   Int    @default(0)
+  goals           Int    @default(0)
+  assists         Int    @default(0)
+  shots           Int    @default(0)
+  shotsOnTarget   Int    @default(0)
+  passes          Int    @default(0)
+  passAccuracy    Float?
+  tackles         Int    @default(0)
+  interceptions   Int    @default(0)
+  dribbles        Int    @default(0)
+  foulsCommitted  Int    @default(0)
+  foulsSuffered   Int    @default(0)
+  yellowCards     Int    @default(0)
+  redCards        Int    @default(0)
+  saves           Int?   @default(0)
+  expectedGoals   Float? // xG
+  expectedAssists Float? // xA
+  keyPasses       Int?   @default(0)
+  rating          Float?
+
+  playerId Int
+  matchId  Int
+  player   Player @relation(fields: [playerId], references: [id])
+  match    Match  @relation(fields: [matchId], references: [id])
+
+  @@unique([playerId, matchId])
+  @@index([playerId])
+  @@index([matchId])
+}
+
+// --- NEW MODELS FOR AGGREGATE STATS AND TRANSFERS ---
+
+model PlayerSeasonStats {
+  id              Int    @id @default(autoincrement())
+  season          String // e.g., "2023/2024"
+  appearances     Int    @default(0)
+  minutesPlayed   Int    @default(0)
+  goals           Int    @default(0)
+  assists         Int    @default(0)
+  shots           Int    @default(0)
+  shotsOnTarget   Int    @default(0)
+  passes          Int    @default(0)
+  passAccuracy    Float?
+  tackles         Int    @default(0)
+  interceptions   Int    @default(0)
+  dribbles        Int    @default(0)
+  foulsCommitted  Int    @default(0)
+  foulsSuffered   Int    @default(0)
+  yellowCards     Int    @default(0)
+  redCards        Int    @default(0)
+  saves           Int?   @default(0)
+  expectedGoals   Float? // xG
+  expectedAssists Float? // xA
+  keyPasses       Int?   @default(0)
+
+  playerId Int
+  teamId   Int
+  leagueId Int
+  player   Player @relation(fields: [playerId], references: [id])
+  team     Team   @relation(fields: [teamId], references: [id])
+  league   League @relation(fields: [leagueId], references: [id])
+
+  @@unique([playerId, teamId, leagueId, season])
+  @@index([playerId])
+  @@index([teamId])
+}
+
+model Transfer {
+  id           Int          @id @default(autoincrement())
+  transferDate DateTime
+  transferFee  Float? // Can be null for free transfers
+  transferType TransferType @default(Permanent)
+
+  playerId     Int
+  fromTeamId   Int?
+  toTeamId     Int
+
+  player       Player @relation("PlayerTransfers", fields: [playerId], references: [id])
+  fromTeam     Team?  @relation("TransfersFrom", fields: [fromTeamId], references: [id])
+  toTeam       Team   @relation("TransfersTo", fields: [toTeamId], references: [id])
+
+  @@index([playerId])
+  @@index([fromTeamId])
+  @@index([toTeamId])
+}
+
+model Trophy {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // e.g., "Ballon d'Or", "Premier League Winner"
+  type        String   // "Individual" or "Team"
+  year        Int
+
+  playerAwards PlayerTrophy[]
+}
+
+model PlayerTrophy {
+  id       Int @id @default(autoincrement())
+  season   String // e.g., "2023/2024"
+
+  playerId Int
+  trophyId Int
+  player   Player @relation(fields: [playerId], references: [id])
+  trophy   Trophy @relation(fields: [trophyId], references: [id])
+
+  @@unique([playerId, trophyId, season])
+}
+
+model Odd {
+  id          Int    @id @default(autoincrement())
+  provider    String
+  homeWinOdds Float
+  drawOdds    Float
+  awayWinOdds Float
+
+  matchId Int   @unique
+  match   Match @relation(fields: [matchId], references: [id])
 }
