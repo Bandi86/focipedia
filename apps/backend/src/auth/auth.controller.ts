@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { RefreshDto } from './dto/refresh.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -32,6 +33,22 @@ export class AuthController {
     const tokens = await this.auth.issueTokens(user.id, user.email, user.role);
     return {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      ...tokens,
+    };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  async refresh(@Body() dto: RefreshDto) {
+    // Decode without verifying email/role; verify signature with refresh secret
+    const decoded: any = await this.auth['jwt'].verifyAsync(dto.refreshToken, {
+      secret: process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'dev_jwt_secret',
+      ignoreExpiration: false,
+    });
+    const tokens = await this.auth.rotateRefreshToken(decoded.sub, dto.refreshToken);
+    const user = await this.prisma.user.findUnique({ where: { id: decoded.sub } });
+    return {
+      user: user && { id: user.id, email: user.email, name: user.name, role: user.role },
       ...tokens,
     };
   }

@@ -24,9 +24,40 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## Focipedia Backend
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+NestJS + Prisma alapú backend. Port: 3001
+
+### Parancsok (pnpm)
+
+```bash
+pnpm --filter backend start:dev   # fejlesztői mód
+pnpm --filter backend build       # build
+pnpm --filter backend prisma:seed # Super Admin seed
+```
+
+### Környezeti változók
+
+`.env` a `apps/backend/` alatt. Alapok:
+
+```
+DATABASE_URL="postgresql://user:pass@localhost:5432/focipedia?schema=public"
+JWT_SECRET="change_me"
+SEED_ADMIN_EMAIL="admin@example.com"
+SEED_ADMIN_PASSWORD="Admin123!"
+```
+
+### Auth végpontok
+
+- POST `/auth/register` { email, password, name? }
+- POST `/auth/login` { email, password }
+
+Válasz tartalmaz `accessToken`-t. Védett végpontokhoz `Authorization: Bearer <token>`.
+
+### Users (ADMIN only)
+
+- GET `/users`
+- GET `/users/:id`
 
 ## Installation
 
