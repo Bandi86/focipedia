@@ -18,6 +18,11 @@ Lépések
 3. Megtartandó/újraírandó/eldobandó jelölése
 4. Prioritás és ütemezés (kockázat/haszon alapján)
 
+Gyors statisztika (node_modules kizárva)
+- Top-level: apps, dist, docs, packages, prediction_module, scripts, tests
+- Második szint: apps/backend, apps/frontend, dist/apps, docs/*, packages/{types,ui,utils}, prediction_module/bots
+- Fájlszám: TypeScript ~155, TSX ~93
+
 DoD
 - [ ] Teljes inventory táblázat modulonként
 - [ ] Prioritási sorrend és migrációs backlog
