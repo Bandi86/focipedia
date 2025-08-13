@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   lint-and-format:
@@ -32,4 +32,3 @@ jobs:
 
       - name: ESLint (no warnings)
         run: pnpm lint:ci
-
