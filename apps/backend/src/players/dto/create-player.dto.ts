@@ -1,5 +1,7 @@
-import { IsDateString, IsEnum, IsInt, IsOptional, IsString, IsUrl } from 'class-validator';
-import { PlayerPosition } from '@prisma/client';
+import { IsDateString, IsIn, IsInt, IsOptional, IsString, IsUrl } from 'class-validator';
+import { $Enums } from '@prisma/client';
+
+const PLAYER_POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'] as const;
 
 export class CreatePlayerDto {
   @IsString()
@@ -12,8 +14,8 @@ export class CreatePlayerDto {
   @IsString()
   nationality!: string;
 
-  @IsEnum(PlayerPosition)
-  position!: PlayerPosition;
+  @IsIn(PLAYER_POSITIONS as unknown as string[])
+  position!: $Enums.PlayerPosition;
 
   @IsOptional()
   @IsInt()

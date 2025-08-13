@@ -1,12 +1,16 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { OddsService } from './odds.service';
+import { CreateOddDto } from './dto/create-odd.dto';
+import { UpdateOddDto } from './dto/update-odd.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('odds')
 @Controller('odds')
 export class OddsController {
   constructor(private readonly oddsService: OddsService) {}
 
   @Post()
-  create(@Body() createOddDto: any) {
+  create(@Body() createOddDto: CreateOddDto) {
     return this.oddsService.create(createOddDto);
   }
 
@@ -21,7 +25,7 @@ export class OddsController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateOddDto: any) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateOddDto: UpdateOddDto) {
     return this.oddsService.update(id, updateOddDto);
   }
 

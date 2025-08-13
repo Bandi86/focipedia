@@ -1,16 +1,19 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { MatchesService } from './matches.service';
+import { CreateMatchDto } from './dto/create-match.dto';
+import { UpdateMatchDto } from './dto/update-match.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('matches')
 @Controller('matches')
 export class MatchesController {
   constructor(private readonly matchesService: MatchesService) {}
 
   @Post()
-  create(@Body() createMatchDto: any) {
+  create(@Body() createMatchDto: CreateMatchDto) {
     return this.matchesService.create(createMatchDto);
   }
 
-  @Get()
   @Get()
   findAll() {
     return this.matchesService.findAll();
@@ -47,7 +50,7 @@ export class MatchesController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateMatchDto: any) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateMatchDto: UpdateMatchDto) {
     return this.matchesService.update(id, updateMatchDto);
   }
 

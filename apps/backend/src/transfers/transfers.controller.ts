@@ -1,12 +1,16 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { TransfersService } from './transfers.service';
+import { CreateTransferDto } from './dto/create-transfer.dto';
+import { UpdateTransferDto } from './dto/update-transfer.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('transfers')
 @Controller('transfers')
 export class TransfersController {
   constructor(private readonly transfersService: TransfersService) {}
 
   @Post()
-  create(@Body() createTransferDto: any) {
+  create(@Body() createTransferDto: CreateTransferDto) {
     return this.transfersService.create(createTransferDto);
   }
 
@@ -21,7 +25,7 @@ export class TransfersController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateTransferDto: any) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateTransferDto: UpdateTransferDto) {
     return this.transfersService.update(id, updateTransferDto);
   }
 

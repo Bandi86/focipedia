@@ -12,6 +12,7 @@ export default [
       'apps/backend/dist/**',
       'apps/backend/generated/**',
       'apps/frontend/.next/**',
+      'archive/**',
       'node_modules/**',
     ],
   },
